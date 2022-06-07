@@ -1,0 +1,13 @@
+{
+  "name": "Sustainify",
+  "description": "Information about the sustainability of a company",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
