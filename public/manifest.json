@@ -4,10 +4,16 @@
   "version": "1.0",
   "manifest_version": 3,
   "permissions": [
-    "activeTab",
+    "webNavigation",
     "scripting"
   ],
+  "action": {},
   "background": {
     "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "24": "icon24.png",
+    "48": "icon48.png"
   }
 }

@@ -1,15 +1,13 @@
-let active = false;
+const URL_REGEX = /(^(http)[s]?(:\/\/))((\w)+\.)*((\w)+)((\.)[a-zA-Z]{2,3})((\/(\S)+)?)+/
 
-function makeOrange(color: string): void {
-    document.body.style.backgroundColor = color;
-}
+chrome.webNavigation.onCompleted.addListener(async ({url}) => {
+    const matches = url.match(URL_REGEX) || []
 
-chrome.action.onClicked.addListener((tab) => {
-    active = !active;
-    const color = active ? 'orange' : 'white';
-    chrome.scripting.executeScript({
-        target: {tabId: tab.id ? tab.id : -1},
-        func: makeOrange,
-        args: [color]
-    }).then();
+    if (matches === null || matches.length < 7) {
+        return;
+    }
+
+    await chrome.action.setBadgeText({
+        text: matches[6] || "😢" // domain name
+    });
 });
