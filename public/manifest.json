@@ -5,9 +5,11 @@
   "manifest_version": 3,
   "permissions": [
     "webNavigation",
-    "scripting"
+    "scripting",
+    "tabs",
+    "background",
+    "activeTab"
   ],
-  "action": {},
   "background": {
     "service_worker": "background.js"
   },
@@ -15,5 +17,9 @@
     "16": "icon16.png",
     "24": "icon24.png",
     "48": "icon48.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sustainify"
   }
 }
