@@ -10,50 +10,68 @@ async function update(tab: TabInformation) {
 }
 
 
-async function getTabInformation(tab: Tab): Promise<TabInformation> {
-    const existingTabInformation = tabs.find(({tabId}) => tabId === tab.id);
-
-    if (existingTabInformation) {
-        return existingTabInformation;
-    }
-
-    //TODO
-    const urlParts = tab.url?.match(URL_REGEX) || []
+async function getTabInformation(tab?: Tab): Promise<TabInformation> {
+    const existingTabInformation = tabs.find(({tabId}) => tabId === tab?.id);
+    const urlParts = tab?.url?.match(URL_REGEX) || []
 
     if (urlParts === null || urlParts.length < 7) {
         return {
-            tabId: tab.id || 0,
+            lastCompany: "",
+            tabId: tab?.id || 0,
             text: ""
         };
     }
 
-    const tabInformation = {
-        tabId: tab.id || 0,
-        text: urlParts[6]
+    const companyName: string = urlParts[6];
+
+    if (existingTabInformation) {
+        if (companyName === existingTabInformation.lastCompany) {
+            return existingTabInformation;
+        }
+
+        tabs = tabs.filter(tab => tab !== existingTabInformation);
+    }
+
+    const tabInformation: TabInformation = {
+        lastCompany: companyName,
+        tabId: tab?.id || 0,
+        text: companyName
     };
 
     tabs.push(tabInformation);
-
     return tabInformation;
 }
 
+chrome.tabs.onActivated.addListener(async () => {
+    chrome.tabs.query({active: true, currentWindow: true}, async (tabList) => {
+        const tabInfo = await getTabInformation(tabList[0]);
+
+        await update(tabInfo);
+    });
+});
+
+chrome.tabs.onUpdated.addListener(async (_, __, tab) => {
+    const tabInfo = await getTabInformation(tab);
+
+    await update(tabInfo);
+});
+
 chrome.runtime.onMessage.addListener(
-    function (request, _, sendResponse) {
+    (request, _, sendResponse) => {
         if (request.msg !== "update_popup") {
-            return;
+            return false;
         }
 
-        const tab = request.tab;
+        chrome.tabs.query({active:true, currentWindow: true}, async (tabList) => {
+            const tabInformation = await getTabInformation(tabList[0]);
 
-        getTabInformation(tab).then(async tabInformation => {
-            await update(tabInformation);
-
-            sendResponse(tabInformation)
+            sendResponse(tabInformation);
         });
+
+        return true;
     }
 );
 
 chrome.tabs.onRemoved.addListener((tabId) => {
     tabs = tabs.filter((tabInformation) => tabInformation.tabId !== tabId);
 });
-

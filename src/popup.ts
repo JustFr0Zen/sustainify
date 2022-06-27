@@ -8,21 +8,17 @@ function updateContent(tab: TabInformation) {
     p.innerText = tab.text;
 }
 
-chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+window.onload = () => {
+    console.log("Hallo Welt");
     chrome.runtime.sendMessage({
         msg: "update_popup",
-        tab: tabs[0]
     }, (tabInformation) => {
+        console.log("Response", tabInformation)
+
+        if (!tabInformation) {
+            return;
+        }
+
         updateContent(tabInformation);
     });
-});
-
-// chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-//     chrome.runtime.sendMessage("update-popup", (response) => {
-//         if (!response) {
-//             return;
-//         }
-//
-//         updateContent(response)
-//     })
-// });
+};
