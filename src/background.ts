@@ -4,9 +4,42 @@ const URL_REGEX = /(^(http)s?(:\/\/))((\S)+\.)*(([\w-])+)((\.)[a-zA-Z]{2,3})((\/
 let tabs: TabInformation[] = [];
 
 async function update(tab: TabInformation) {
+    if (tab.rating === -1) {
+        await chrome.action.setBadgeText({
+            text: ""
+        });
+
+        return;
+    }
+
     await chrome.action.setBadgeText({
-        text: tab.text
+        text: tab.rating.toString()
     });
+
+    await chrome.action.setBadgeBackgroundColor({
+        color: getColorOfRating(tab.rating)
+    })
+}
+
+
+function getColorOfRating(rating: number) {
+    if (rating > 40) {
+        return "#F0AB00";
+    }
+
+    if (rating > 30) {
+        return "#F3BC33";
+    }
+
+    if (rating > 20) {
+        return "#F6CD5C";
+    }
+
+    if (rating > 10) {
+        return "#F9DD99";
+    }
+
+    return "#CCCCCC";
 }
 
 
@@ -18,7 +51,7 @@ async function getTabInformation(tab?: Tab): Promise<TabInformation> {
         return {
             lastCompany: "",
             tabId: tab?.id || 0,
-            text: ""
+            rating: -1
         };
     }
 
@@ -32,14 +65,33 @@ async function getTabInformation(tab?: Tab): Promise<TabInformation> {
         tabs = tabs.filter(tab => tab !== existingTabInformation);
     }
 
-    const tabInformation: TabInformation = {
-        lastCompany: companyName,
-        tabId: tab?.id || 0,
-        text: companyName
-    };
 
-    tabs.push(tabInformation);
-    return tabInformation;
+    try {
+        console.log("Trying to fetch...", `http://localhost:8080/rating/${companyName}`);
+        const ratingResponse = await fetch(`http://localhost:8080/rating/${companyName}`,
+            {
+                method: 'GET'
+            });
+        const rating: RatingView = await ratingResponse.json()
+
+        console.log("Result:", rating);
+
+        const tabInformation: TabInformation = {
+            lastCompany: companyName,
+            tabId: tab?.id || 0,
+            rating: rating.rating
+        };
+
+        tabs.push(tabInformation);
+        return tabInformation;
+    } catch (e) {
+        console.log(e)
+        return {
+            lastCompany: "",
+            tabId: tab?.id || 0,
+            rating: -1
+        };
+    }
 }
 
 chrome.tabs.onActivated.addListener(async () => {
@@ -62,7 +114,7 @@ chrome.runtime.onMessage.addListener(
             return false;
         }
 
-        chrome.tabs.query({active:true, currentWindow: true}, async (tabList) => {
+        chrome.tabs.query({active: true, currentWindow: true}, async (tabList) => {
             const tabInformation = await getTabInformation(tabList[0]);
 
             sendResponse(tabInformation);

@@ -18,3 +18,50 @@ html, body {
     width: 100%;
     height: auto;
 }
+
+#content {
+    width: 100%;
+}
+
+#content div {
+    width: 100%;
+    display: flex;
+}
+
+.column {
+    flex-direction: column;
+}
+
+.column-center {
+    align-items: center;
+}
+
+.error-x {
+    font-size: 25px;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.error-text {
+    font-size: 14px;
+}
+
+.grid {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+.grid * {
+    font-size: 14px;
+    width: 100%;
+}
+
+.sub-heading {
+    text-align: center;
+    font-weight: bold;
+}
+
+.value {
+    text-align: center;
+}

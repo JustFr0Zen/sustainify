@@ -1,6 +1,6 @@
 {
   "name": "Sustainify",
-  "description": "Information about the sustainability of a company",
+  "description": "Information about the ESG-Score of a company",
   "version": "1.0",
   "manifest_version": 3,
   "permissions": [
